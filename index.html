@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Program</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #1a1c1a;
+  --surface:  #202220;
+  --surface2: #272927;
+  --border:   #333533;
+  --text:     #ddeedd;
+  --muted:    #6a7a6a;
+  --blue:     #3b82f6;
+  --blue-dim: rgba(59,130,246,0.13);
+  --red:      #cc0014;
+  --red-dim:  rgba(204,0,20,0.13);
+  --font:     'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  min-height: 100vh;
+  padding: 48px 24px;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(0,0,0,0.05) 3px,
+    rgba(0,0,0,0.05) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.wrapper {
+  max-width: 740px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 44px;
+}
+
+.prog-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.target-pill {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  background: var(--red);
+  color: #fff;
+  padding: 6px 18px;
+  border-radius: 100px;
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* ── WEEK HEADER ── */
+.week-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.cycle-toggle {
+  display: flex;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-btn {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  color: var(--muted);
+  transition: background 0.18s, color 0.18s;
+}
+
+.toggle-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 6px;
+}
+
+/* ── WEEK GRID ── */
+.week {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.day-col {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+.day-col:last-child { border-right: none; }
+
+.day-name {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 11px 0 9px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.day-slot {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 6px;
+}
+
+.slot-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  border-radius: 6px;
+  text-align: center;
+  line-height: 1.3;
+  width: 100%;
+}
+
+.slot-upper {
+  background: var(--blue-dim);
+  color: var(--blue);
+  border: 1px solid rgba(59,130,246,0.35);
+}
+
+.slot-lower {
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid rgba(204,0,20,0.35);
+}
+
+.slot-wild {
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  font-size: 8px;
+  letter-spacing: 0.3px;
+}
+
+.slot-rest {
+  color: #2e3a2e;
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  width: auto;
+}
+
+/* ── SESSIONS ── */
+.sessions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.session {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.session-head {
+  padding: 18px 20px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.session-head.upper { border-top: 3px solid var(--blue); }
+.session-head.lower { border-top: 3px solid var(--red); }
+
+.session-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.upper .session-name { color: var(--blue); }
+.lower .session-name { color: var(--red); }
+
+.session-tag {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.ex-list { padding: 4px 0; }
+
+.ex {
+  display: flex;
+  align-items: center;
+  padding: 11px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  gap: 10px;
+}
+.ex:last-child { border-bottom: none; }
+
+.ex-n {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--border);
+  flex-shrink: 0;
+  width: 14px;
+}
+
+.ex-info { flex: 1; }
+
+.ex-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.ex-hint {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.sets-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.upper-session .sets-badge { color: var(--blue); border: 1px solid rgba(59,130,246,0.3); background: var(--blue-dim); }
+.lower-session .sets-badge { color: var(--red);  border: 1px solid rgba(204,0,20,0.3);  background: var(--red-dim); }
+
+@media (max-width: 580px) {
+  .sessions { grid-template-columns: 1fr; }
+  .day-name { font-size: 8px; }
+  .slot-tag { font-size: 8px; padding: 4px 4px; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Top -->
+  <div class="topbar">
+    <div class="prog-title">Training Program</div>
+    <div class="target-pill">Goal · 85 kg</div>
+  </div>
+
+  <!-- Week -->
+  <div class="week-header">
+    <span class="section-label" style="margin-bottom:0">This Week</span>
+    <div class="cycle-toggle" onclick="toggleCycle()">
+      <div class="toggle-btn active" id="btn-a">Cycle A</div>
+      <div class="toggle-btn" id="btn-b">Cycle B</div>
+    </div>
+  </div>
+
+  <div class="week" id="week-grid">
+    <!-- Days injected by JS -->
+  </div>
+
+  <!-- Sessions -->
+  <p class="section-label">Sessions</p>
+  <div class="sessions">
+
+    <div class="session upper-session">
+      <div class="session-head upper">
+        <div class="session-name">Upper</div>
+        <div class="session-tag">Push · Pull</div>
+      </div>
+      <div class="ex-list">
+        <div class="ex"><span class="ex-n">1</span><div class="ex-info"><div class="ex-name">Lat Pulldown</div><div class="ex-hint">Wrist hooks</div></div><span class="sets-badge">2 × FAIL</span></div>
+        <div class="ex"><span class="ex-n">2</span><div class="ex-info"><div class="ex-name">Seated Cable Row</div><div class="ex-hint">Wrist hooks · chest up</div></div><span class="sets-badge">2 × FAIL</span></div>
+        <div class="ex"><span class="ex-n">3</span><div class="ex-info"><div class="ex-name">Chest Press Machine</div><div class="ex-hint">Full range</div></div><span class="sets-badge">2 × FAIL</span></div>
+        <div class="ex"><span class="ex-n">4</span><div class="ex-info"><div class="ex-name">DB Shoulder Press</div><div class="ex-hint">Controlled tempo</div></div><span class="sets-badge">2 × FAIL</span></div>
+        <div class="ex"><span class="ex-n">5</span><div class="ex-info"><div class="ex-name">Cable Lateral Raise</div><div class="ex-hint">Light · slow</div></div><span class="sets-badge">2 × FAIL</span></div>
+        <div class="ex"><span class="ex-n">6</span><div class="ex-info"><div class="ex-name">DB Curl + Tricep Pushdown</div><div class="ex-hint">Superset</div></div><span class="sets-badge">2 × FAIL</span></div>
+      </div>
+    </div>
+
+    <div class="session lower-session">
+      <div class="session-head lower">
+        <div class="session-name">Lower</div>
+        <div class="session-tag">Legs · Glutes</div>
+      </div>
+      <div class="ex-list">
+        <div class="ex"><span class="ex-n">1</span><div class="ex-info"><div class="ex-name">Leg Press</div><div class="ex-hint">Full depth</div></div><span class="sets-badge">2 × FAIL</span></div>
+        <div class="ex"><span class="ex-n">2</span><div class="ex-info"><div class="ex-name">Hip Thrust Machine</div><div class="ex-hint">Squeeze at top</div></div><span class="sets-badge">2 × FAIL</span></div>
+        <div class="ex"><span class="ex-n">3</span><div class="ex-info"><div class="ex-name">Seated Leg Curl</div><div class="ex-hint">Full range</div></div><span class="sets-badge">2 × FAIL</span></div>
+        <div class="ex"><span class="ex-n">4</span><div class="ex-info"><div class="ex-name">Leg Extension</div><div class="ex-hint">Pause at top</div></div><span class="sets-badge">2 × FAIL</span></div>
+        <div class="ex"><span class="ex-n">5</span><div class="ex-info"><div class="ex-name">Calf Raises</div><div class="ex-hint">Slow tempo</div></div><span class="sets-badge">2 × FAIL</span></div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Each cycle: 7 slots mapped to day indices 0–6
+  // Cycle A: Upper, Lower, Upper, Lower, Wildcard, Rest, Rest
+  // Cycle B: Upper, Lower, Wildcard, Rest, Rest, Rest, Rest
+  const cycles = {
+    a: [
+      { type: 'upper', label: 'Upper' },
+      { type: 'lower', label: 'Lower' },
+      { type: 'upper', label: 'Upper' },
+      { type: 'lower', label: 'Lower' },
+      { type: 'wild',  label: 'Wild<br>card' },
+      { type: 'rest',  label: '—' },
+      { type: 'rest',  label: '—' },
+    ],
+    b: [
+      { type: 'upper', label: 'Upper' },
+      { type: 'lower', label: 'Lower' },
+      { type: 'wild',  label: 'Wild<br>card' },
+      { type: 'rest',  label: '—' },
+      { type: 'rest',  label: '—' },
+      { type: 'rest',  label: '—' },
+      { type: 'rest',  label: '—' },
+    ]
+  };
+
+  let current = 'a';
+
+  function renderWeek(cycle) {
+    const grid = document.getElementById('week-grid');
+    grid.innerHTML = '';
+    days.forEach((day, i) => {
+      const slot = cycles[cycle][i];
+      const col = document.createElement('div');
+      col.className = 'day-col';
+      col.innerHTML = `
+        <div class="day-name">${day}</div>
+        <div class="day-slot">
+          <div class="slot-tag slot-${slot.type}" style="text-align:center">${slot.label}</div>
+        </div>
+      `;
+      grid.appendChild(col);
+    });
+  }
+
+  function toggleCycle() {
+    current = current === 'a' ? 'b' : 'a';
+    document.getElementById('btn-a').classList.toggle('active', current === 'a');
+    document.getElementById('btn-b').classList.toggle('active', current === 'b');
+    renderWeek(current);
+  }
+
+  renderWeek('a');
+</script>
+
+</body>
+</html>
